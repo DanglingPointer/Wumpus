@@ -47,10 +47,12 @@ namespace Core
             int rand;
             for (int row = 0; row < NROWS; ++row) {
                 for (int col = 0; col < NCOLS; ++col) {
-                    rand = m_rand.Next(0, 5);
-                    if (rand == 4) {
-                        m_cells[row, col] |= Cell.Pit;
-                        FillAdjacent(row, col, Cell.Breeze);
+                    if (!(row == GoldRow && col == GoldCol) && !(row == 0 && col == 0)) {
+                        rand = m_rand.Next(0, 5);
+                        if (rand == 4) {
+                            m_cells[row, col] |= Cell.Pit;
+                            FillAdjacent(row, col, Cell.Breeze);
+                        }
                     }
                 }
             }

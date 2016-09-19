@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Windows;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Windows.Input;
@@ -49,25 +51,29 @@ namespace GUI
             PitOpacity = new int[World.NROWS * World.NCOLS];
             StenchOpacity = new int[World.NROWS * World.NCOLS];
             BreezeOpacity = new int[World.NROWS * World.NCOLS];
+            BorderOpacity = new double[World.NROWS * World.NCOLS];
 
-            for (int row = 0; row < World.NROWS; ++row) {       // temporary
-                for (int col = 0; col < World.NCOLS; ++col) {
-                    if (World.IsBreeze(row, col))
-                        BreezeOpacity[GetOpacityIndex(row, col)] = 1;
-                }
-            }
-            for (int row = 0; row < World.NROWS; ++row) {       // temporary
-                for (int col = 0; col < World.NCOLS; ++col) {
-                    if (World.IsStench(row, col))
-                        StenchOpacity[GetOpacityIndex(row, col)] = 1;
-                }
-            }
-            for (int row = 0; row < World.NROWS; ++row) {       // temporary
-                for (int col = 0; col < World.NCOLS; ++col) {
-                    if (World.IsPit(row, col))
-                        PitOpacity[GetOpacityIndex(row, col)] = 1;
-                }
-            }
+            for (int i = 0; i < BorderOpacity.Length; ++i)
+                BorderOpacity[i] = 0.5;
+
+            //for (int row = 0; row < World.NROWS; ++row) {       // temporary
+            //    for (int col = 0; col < World.NCOLS; ++col) {
+            //        if (World.IsBreeze(row, col))
+            //            BreezeOpacity[GetOpacityIndex(row, col)] = 1;
+            //    }
+            //}
+            //for (int row = 0; row < World.NROWS; ++row) {       // temporary
+            //    for (int col = 0; col < World.NCOLS; ++col) {
+            //        if (World.IsStench(row, col))
+            //            StenchOpacity[GetOpacityIndex(row, col)] = 1;
+            //    }
+            //}
+            //for (int row = 0; row < World.NROWS; ++row) {       // temporary
+            //    for (int col = 0; col < World.NCOLS; ++col) {
+            //        if (World.IsPit(row, col))
+            //            PitOpacity[GetOpacityIndex(row, col)] = 1;
+            //    }
+            //}
 
             BreezeImage = @"..\..\breeze.png";
             PitImage = @"..\..\pit.png";
@@ -75,13 +81,15 @@ namespace GUI
 
             PlayerImage = @"..\..\player_right.png";
 
-            WumpusOpacity = 1;
+            WumpusOpacity = 0;
             WumpusImage = @"..\..\wumpus_live.png";
 
-            GoldOpacity = 1;
+            GoldOpacity = 0;
             GoldImage = @"..\..\gold.png";
-
-
+            
+            CurrentStenchOpacity = 0.5;            
+            CurrentBreezeOpacity = 0.5;
+            CurrentPitOpacity = 0.5;
             //--------------------------------------
             OnUpPressed = new RelayCommand(InternalUpPressed);
             OnRightPressed = new RelayCommand(InternalRightPressed);
@@ -99,6 +107,7 @@ namespace GUI
                 GoldOpacity = 0;
                 InternalPropertyChanged(nameof(GoldOpacity));
             };
+            InternalUpdateOpacities(false, m_game.Player.Row, m_game.Player.Col);
         }
         void InternalPropertyChanged(string propName)
         {
@@ -114,8 +123,64 @@ namespace GUI
             m_game.Player.Move();
             InternalPropertyChanged(nameof(PlayerCol));
             InternalPropertyChanged(nameof(PlayerRow));
-            InternalPropertyChanged(nameof(PlayerImage));
             InternalPropertyChanged(nameof(ScoreText));
+
+            InternalUpdateOpacities(true, m_game.Player.Row, m_game.Player.Col);
+
+            if (World.IsPit(m_game.Player.Row, m_game.Player.Col) || World.IsWumpus(m_game.Player.Row, m_game.Player.Col)) {
+                Thread.Sleep(100);
+                MessageBox.Show("Condolences, you lost! (Fallen in a pit or eaten by the Wumpus)", "Gameover");
+                //Application.Current.Shutdown();
+            }
+        }
+        void InternalUpdateOpacities(bool notify, int row, int col)
+        {
+            BorderOpacity[GetOpacityIndex(row, col)] = 1;
+
+            if (World.IsBreeze(row, col)) {
+                BreezeOpacity[GetOpacityIndex(row, col)] = 1;
+                CurrentBreezeOpacity = 1;
+                if (notify)
+                    InternalPropertyChanged(nameof(BreezeOpacity));
+            }
+            else
+                CurrentBreezeOpacity = 0.5;
+
+            if (World.IsStench(row, col)) {
+                StenchOpacity[GetOpacityIndex(row, col)] = 1;
+                CurrentStenchOpacity = 1;
+                if (notify)
+                    InternalPropertyChanged(nameof(StenchOpacity));
+            }
+            else 
+                CurrentStenchOpacity = 0.5;
+            
+            if (World.IsPit(row, col)) {
+                PitOpacity[GetOpacityIndex(row, col)] = 1;
+                CurrentPitOpacity = 1;
+                if (notify) 
+                    InternalPropertyChanged(nameof(PitOpacity));
+            }
+            else 
+                CurrentPitOpacity = 0.5;
+            
+            if (World.IsGold(row, col)) {
+                GoldOpacity = 1;
+                if (notify)
+                    InternalPropertyChanged(nameof(GoldOpacity));
+            }
+            if (World.IsWumpus(row, col)) {
+                WumpusOpacity = 1;
+                if (notify)
+                    InternalPropertyChanged(nameof(WumpusOpacity));
+            }
+
+            if (notify) {
+                InternalPropertyChanged(nameof(CurrentPitOpacity));
+                InternalPropertyChanged(nameof(CurrentBreezeOpacity));
+                InternalPropertyChanged(nameof(CurrentStenchOpacity));
+                InternalPropertyChanged(nameof(BorderOpacity));
+            }
         }
 
         public ICommand OnRightPressed
@@ -157,12 +222,44 @@ namespace GUI
         { get; private set; }
         void InternalSpacePressed(object o)
         {
-            m_game.Player.Shoot();
+            if (m_game.Player.HasArrow) {
+                Task.Run(() => {
+                    Dirn facing = m_game.Player.Facing;
 
-            InternalPropertyChanged(nameof(StenchOpacity));
-            InternalPropertyChanged(nameof(BreezeOpacity));
-            InternalPropertyChanged(nameof(PitOpacity));
-            InternalPropertyChanged(nameof(WumpusOpacity));
+                    ArrowImage = (facing == Dirn.Up || facing == Dirn.Down) ? @"..\..\arrow_vertical.png" : @"..\..\arrow_horisontal.png";
+                    m_arrowCol = m_game.Player.Col;
+                    m_arrowRow = m_game.Player.Row;
+                    ArrowOpacity = 1;
+                    InternalPropertyChanged(nameof(ArrowCol));
+                    InternalPropertyChanged(nameof(ArrowRow));
+                    InternalPropertyChanged(nameof(ArrowOpacity));
+                    InternalPropertyChanged(nameof(ArrowImage));
+
+                    if (facing == Dirn.Up || facing == Dirn.Down) {
+                        int dist = facing == Dirn.Up ? 1 : -1;
+                        while ((m_arrowRow + dist) < World.NROWS && (m_arrowRow + dist) >= 0) {
+                            Thread.Sleep(200);
+                            m_arrowRow += dist;
+                            InternalPropertyChanged(nameof(ArrowRow));
+                            InternalUpdateOpacities(true, m_arrowRow, m_arrowCol);
+                        }
+                    }
+                    else {
+                        int dist = facing == Dirn.Right ? 1 : -1;
+                        while ((m_arrowCol + dist) < World.NCOLS && (m_arrowCol + dist) >= 0) {
+                            Thread.Sleep(200);
+                            m_arrowCol += dist;
+                            InternalPropertyChanged(nameof(ArrowCol));
+                            InternalUpdateOpacities(true, m_arrowRow, m_arrowCol);
+                        }
+                    }
+
+                    ArrowOpacity = 0;
+                    Thread.Sleep(500);
+                    InternalPropertyChanged(nameof(ArrowOpacity));
+                    m_game.Player.Shoot();
+                });
+            }
         }
 
         public ICommand OnEnterPressed
@@ -174,14 +271,23 @@ namespace GUI
         }
 
         //=================================================================================================================
+        public double CurrentStenchOpacity
+        { get; private set; }
+        
+        public double CurrentBreezeOpacity
+        { get; private set; }
+
+        public double CurrentPitOpacity
+        { get; private set; }
+        //=================================================================================================================
 
         public int PlayerRow
         {
-            get { return (3 - m_game.Player.Row) + 1; }
+            get { return GetGuiRow(m_game.Player.Row); }
         }
         public int PlayerCol
         {
-            get { return m_game.Player.Col + 1; }
+            get { return GetGuiCol(m_game.Player.Col); }
         }
         public string PlayerImage
         { get; private set; }
@@ -203,15 +309,17 @@ namespace GUI
         public string BreezeImage
         { get; private set; }
 
+        public double[] BorderOpacity
+        { get; }
         //=================================================================================================================
 
         public int WumpusRow
         {
-            get { return (3 - World.WumpusRow) + 1; }
+            get { return GetGuiRow(World.WumpusRow); }
         }
         public int WumpusCol
         {
-            get { return World.WumpusCol + 1; }
+            get { return GetGuiCol(World.WumpusCol); }
         }
         public int WumpusOpacity
         { get; private set; }
@@ -222,11 +330,11 @@ namespace GUI
 
         public int GoldRow
         {
-            get { return (3 - World.GoldRow) + 1; }
+            get { return GetGuiRow(World.GoldRow); }
         }
         public int GoldCol
         {
-            get { return World.GoldCol + 1; }
+            get { return GetGuiCol(World.GoldCol); }
         }
         public int GoldOpacity
         { get; private set; }
@@ -234,17 +342,42 @@ namespace GUI
         { get; private set; }
 
         //=================================================================================================================
-        
+
+        public int ArrowRow
+        {
+            get { return GetGuiRow(m_arrowRow); }
+        }
+        public int ArrowCol
+        {
+            get { return GetGuiCol(m_arrowCol); }
+        }
+        public string ArrowImage
+        { get; private set; }
+        public double ArrowOpacity
+        { get; private set; }
+
+        //=================================================================================================================
+
         public string ScoreText
         {
             get { return $"Score: {m_game.Score.Points}"; }
         }
 
-
+        static int GetGuiRow(int coreRow)
+        {
+            return (3 - coreRow) + 1;
+        }
+        static int GetGuiCol(int coreCol)
+        {
+            return coreCol + 1;
+        }
         static int GetOpacityIndex(int row, int col)
         {
             return World.NCOLS * row + col;
         }
+
+        int m_arrowRow;
+        int m_arrowCol;
         Game m_game;
     }
 }

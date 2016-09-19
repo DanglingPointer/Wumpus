@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="Wumpus" Height="500" Width="500">
+        Title="Wumpus" Height="500" Width="500" Icon="wumpus_live.png">
     <Window.Resources>
         <ResourceDictionary>
             <Style TargetType="{x:Type Border}">
@@ -59,12 +59,12 @@
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="2*"/>
             <RowDefinition Height="3*"/>
             <RowDefinition Height="3*"/>
             <RowDefinition Height="3*"/>
             <RowDefinition Height="3*"/>
-            <RowDefinition Height="2*"/>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
 
         <Label Grid.Column="4" Grid.Row="0" Content="{Binding ScoreText}" Background="Transparent" Foreground="White"
@@ -72,82 +72,82 @@
 
         <Rectangle Grid.Row="1" Grid.Column="1" Grid.RowSpan="4" Grid.ColumnSpan="4" Fill="Black"/>
 
-        <Border Grid.Column="1" Grid.Row="1"/>
+        <Border Grid.Column="1" Grid.Row="1" Opacity="{Binding BorderOpacity[12]}"/>
         <Image Grid.Column="1" Grid.Row="1" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[12] }"/>
         <Image Grid.Column="1" Grid.Row="1" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[12] }"/>
         <Image Grid.Column="1" Grid.Row="1" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[12] }"/>
 
-        <Border Grid.Column="2" Grid.Row="1"/>
+        <Border Grid.Column="2" Grid.Row="1" Opacity="{Binding BorderOpacity[13]}"/>
         <Image Grid.Column="2" Grid.Row="1" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[13] }"/>
         <Image Grid.Column="2" Grid.Row="1" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[13] }"/>
         <Image Grid.Column="2" Grid.Row="1" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[13] }"/>
 
-        <Border Grid.Column="3" Grid.Row="1"/>
+        <Border Grid.Column="3" Grid.Row="1" Opacity="{Binding BorderOpacity[14]}"/>
         <Image Grid.Column="3" Grid.Row="1" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[14] }"/>
         <Image Grid.Column="3" Grid.Row="1" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[14] }"/>
         <Image Grid.Column="3" Grid.Row="1" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[14] }"/>
 
-        <Border Grid.Column="4" Grid.Row="1"/>
+        <Border Grid.Column="4" Grid.Row="1" Opacity="{Binding BorderOpacity[15]}"/>
         <Image Grid.Column="4" Grid.Row="1" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[15] }"/>
         <Image Grid.Column="4" Grid.Row="1" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[15] }"/>
         <Image Grid.Column="4" Grid.Row="1" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[15] }"/>
 
-        <Border Grid.Column="1" Grid.Row="2"/>
+        <Border Grid.Column="1" Grid.Row="2" Opacity="{Binding BorderOpacity[8]}"/>
         <Image Grid.Column="1" Grid.Row="2" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[8] }"/>
         <Image Grid.Column="1" Grid.Row="2" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[8] }"/>
         <Image Grid.Column="1" Grid.Row="2" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[8] }"/>
 
-        <Border Grid.Column="2" Grid.Row="2"/>
+        <Border Grid.Column="2" Grid.Row="2" Opacity="{Binding BorderOpacity[9]}"/>
         <Image Grid.Column="2" Grid.Row="2" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[9] }"/>
         <Image Grid.Column="2" Grid.Row="2" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[9] }"/>
         <Image Grid.Column="2" Grid.Row="2" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[9] }"/>
 
-        <Border Grid.Column="3" Grid.Row="2"/>
+        <Border Grid.Column="3" Grid.Row="2" Opacity="{Binding BorderOpacity[10]}"/>
         <Image Grid.Column="3" Grid.Row="2" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[10] }"/>
         <Image Grid.Column="3" Grid.Row="2" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[10] }"/>
         <Image Grid.Column="3" Grid.Row="2" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[10] }"/>
 
-        <Border Grid.Column="4" Grid.Row="2"/>
+        <Border Grid.Column="4" Grid.Row="2" Opacity="{Binding BorderOpacity[11]}"/>
         <Image Grid.Column="4" Grid.Row="2" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[11] }"/>
         <Image Grid.Column="4" Grid.Row="2" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[11] }"/>
         <Image Grid.Column="4" Grid.Row="2" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[11] }"/>
 
-        <Border Grid.Column="1" Grid.Row="3"/>
+        <Border Grid.Column="1" Grid.Row="3" Opacity="{Binding BorderOpacity[4]}"/>
         <Image Grid.Column="1" Grid.Row="3" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[4] }"/>
         <Image Grid.Column="1" Grid.Row="3" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[4] }"/>
         <Image Grid.Column="1" Grid.Row="3" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[4] }"/>
 
-        <Border Grid.Column="2" Grid.Row="3"/>
+        <Border Grid.Column="2" Grid.Row="3" Opacity="{Binding BorderOpacity[5]}"/>
         <Image Grid.Column="2" Grid.Row="3" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[5] }"/>
         <Image Grid.Column="2" Grid.Row="3" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[5] }"/>
         <Image Grid.Column="2" Grid.Row="3" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[5] }"/>
 
-        <Border Grid.Column="3" Grid.Row="3"/>
+        <Border Grid.Column="3" Grid.Row="3" Opacity="{Binding BorderOpacity[6]}"/>
         <Image Grid.Column="3" Grid.Row="3" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[6] }"/>
         <Image Grid.Column="3" Grid.Row="3" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[6] }"/>
         <Image Grid.Column="3" Grid.Row="3" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[6] }"/>
 
-        <Border Grid.Column="4" Grid.Row="3"/>
+        <Border Grid.Column="4" Grid.Row="3" Opacity="{Binding BorderOpacity[7]}"/>
         <Image Grid.Column="4" Grid.Row="3" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[7] }"/>
         <Image Grid.Column="4" Grid.Row="3" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[7] }"/>
         <Image Grid.Column="4" Grid.Row="3" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[7] }"/>
 
-        <Border Grid.Column="1" Grid.Row="4"/>
+        <Border Grid.Column="1" Grid.Row="4" Opacity="{Binding BorderOpacity[0]}"/>
         <Image Grid.Column="1" Grid.Row="4" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[0] }"/>
         <Image Grid.Column="1" Grid.Row="4" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[0] }"/>
         <Image Grid.Column="1" Grid.Row="4" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[0] }"/>
 
-        <Border Grid.Column="2" Grid.Row="4"/>
+        <Border Grid.Column="2" Grid.Row="4" Opacity="{Binding BorderOpacity[1]}"/>
         <Image Grid.Column="2" Grid.Row="4" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[1] }"/>
         <Image Grid.Column="2" Grid.Row="4" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[1] }"/>
         <Image Grid.Column="2" Grid.Row="4" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[1] }"/>
 
-        <Border Grid.Column="3" Grid.Row="4"/>
+        <Border Grid.Column="3" Grid.Row="4" Opacity="{Binding BorderOpacity[2]}"/>
         <Image Grid.Column="3" Grid.Row="4" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[2] }"/>
         <Image Grid.Column="3" Grid.Row="4" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[2] }"/>
         <Image Grid.Column="3" Grid.Row="4" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[2] }"/>
 
-        <Border Grid.Column="4" Grid.Row="4"/>
+        <Border Grid.Column="4" Grid.Row="4" Opacity="{Binding BorderOpacity[3]}"/>
         <Image Grid.Column="4" Grid.Row="4" Style="{StaticResource pit}" Opacity="{Binding PitOpacity[3] }"/>
         <Image Grid.Column="4" Grid.Row="4" Style="{StaticResource breeze}" Opacity="{Binding BreezeOpacity[3] }"/>
         <Image Grid.Column="4" Grid.Row="4" Style="{StaticResource stench}" Opacity="{Binding StenchOpacity[3] }"/>
@@ -158,6 +158,16 @@
                Opacity="{Binding WumpusOpacity}" Margin="10"/>
         <Image Grid.Column="{Binding GoldCol}" Grid.Row="{Binding GoldRow}" Source="{Binding GoldImage}"
                Opacity="{Binding GoldOpacity}" Margin="10"/>
+
+        <Image Grid.Column="2" Grid.Row="0" Source="{Binding StenchImage}" Opacity="{Binding CurrentStenchOpacity}"
+               Margin="20"/>
+        <Image Grid.Column="3" Grid.Row="0" Source="{Binding BreezeImage}" Opacity="{Binding CurrentBreezeOpacity}"
+               Margin="20"/>
+        <Image Grid.Column="1" Grid.Row="0" Source="{Binding PitImage}" Opacity="{Binding CurrentPitOpacity}"
+               Margin="20"/>
+
+        <Image Grid.Column="{Binding ArrowCol}" Grid.Row="{Binding ArrowRow}" Source="{Binding ArrowImage}" 
+               Opacity="{Binding ArrowOpacity}" Margin="20"/>
 
     </Grid>
 </Window>
