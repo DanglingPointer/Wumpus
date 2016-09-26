@@ -32,5 +32,8 @@
     <ClInclude Include="include\Event.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
