@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Windows;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Windows.Input;
-using Core;
 
 namespace GUI
 {
@@ -46,8 +42,6 @@ namespace GUI
 
         public ViewModel()
         {
-            m_game = new Game();
-
             PitOpacity = new int[World.NROWS * World.NCOLS];
             StenchOpacity = new int[World.NROWS * World.NCOLS];
             BreezeOpacity = new int[World.NROWS * World.NCOLS];
@@ -97,17 +91,29 @@ namespace GUI
             OnSpacePressed = new RelayCommand(InternalSpacePressed);
             OnEnterPressed = new RelayCommand(InternalEnterPressed);
 
-            World.WumpusKilled += () => {
-                WumpusImage = @"..\..\wumpus_dead.png";
-                WumpusOpacity = 1;
-                InternalPropertyChanged(nameof(WumpusImage));
-                InternalPropertyChanged(nameof(WumpusOpacity));
-            };
-            World.GoldGrabbed += () => {
-                GoldOpacity = 0;
-                InternalPropertyChanged(nameof(GoldOpacity));
-            };
-            InternalUpdateOpacities(false, m_game.Player.Row, m_game.Player.Col);
+            Task.Run(() => {
+                while (true) {
+                    Thread.Sleep(100);
+                    if (World.IsWumpusKilled()) {
+                        WumpusImage = @"..\..\wumpus_dead.png";
+                        WumpusOpacity = 1;
+                        InternalPropertyChanged(nameof(WumpusImage));
+                        InternalPropertyChanged(nameof(WumpusOpacity));
+                        break;
+                    }
+                }
+            });
+            Task.Run(() => {
+                while (true) {
+                    Thread.Sleep(100);
+                    if (World.IsGoldGrabbed()) {
+                        GoldOpacity = 0;
+                        InternalPropertyChanged(nameof(GoldOpacity));
+                        break;
+                    }
+                }
+            });
+            InternalUpdateOpacities(false, Player.Row, Player.Col);
         }
         void InternalPropertyChanged(string propName)
         {
@@ -120,14 +126,14 @@ namespace GUI
         { get; private set; }
         void InternalUpPressed(object o)
         {
-            m_game.Player.Move();
+            Player.Move();
             InternalPropertyChanged(nameof(PlayerCol));
             InternalPropertyChanged(nameof(PlayerRow));
             InternalPropertyChanged(nameof(ScoreText));
 
-            InternalUpdateOpacities(true, m_game.Player.Row, m_game.Player.Col);
+            InternalUpdateOpacities(true, Player.Row, Player.Col);
 
-            if (World.IsPit(m_game.Player.Row, m_game.Player.Col) || World.IsWumpus(m_game.Player.Row, m_game.Player.Col)) {
+            if (World.IsPit(Player.Row, Player.Col) || World.IsWumpus(Player.Row, Player.Col)) {
                 Thread.Sleep(100);
                 MessageBox.Show("Condolences, you lost! (Fallen in a pit or eaten by the Wumpus)", "Gameover");
                 //Application.Current.Shutdown();
@@ -163,7 +169,7 @@ namespace GUI
             }
             else 
                 CurrentPitOpacity = 0.5;
-            
+
             if (World.IsGold(row, col)) {
                 GoldOpacity = 1;
                 if (notify)
@@ -187,30 +193,30 @@ namespace GUI
         { get; private set; }
         void InternalRightPressed(object o)
         {
-            m_game.Player.TurnRight();
-            InternalUpdateFacing(m_game.Player.Facing);
+            Player.TurnRight();
+            InternalUpdateFacing(Player.Facing);
         }
 
         public ICommand OnLeftPressed
         { get; private set; }
         void InternalLeftPressed(object o)
         {
-            m_game.Player.TurnLeft();
-            InternalUpdateFacing(m_game.Player.Facing);
+            Player.TurnLeft();
+            InternalUpdateFacing(Player.Facing);
         }
-        void InternalUpdateFacing(Dirn dirn)
+        void InternalUpdateFacing(int dirn)
         {
             switch (dirn) {
-                case Dirn.Down:
+                case Player.DIRN_DOWN:
                     PlayerImage = @"..\..\player_down.png";
                     break;
-                case Dirn.Up:
+                case Player.DIRN_UP:
                     PlayerImage = @"..\..\player_up.png";
                     break;
-                case Dirn.Left:
+                case Player.DIRN_LEFT:
                     PlayerImage = @"..\..\player_left.png";
                     break;
-                case Dirn.Right:
+                case Player.DIRN_RIGHT:
                     PlayerImage = @"..\..\player_right.png";
                     break;
             }
@@ -222,21 +228,21 @@ namespace GUI
         { get; private set; }
         void InternalSpacePressed(object o)
         {
-            if (m_game.Player.HasArrow) {
+            if (Player.HasArrow) {
                 Task.Run(() => {
-                    Dirn facing = m_game.Player.Facing;
+                    int facing = Player.Facing;
 
-                    ArrowImage = (facing == Dirn.Up || facing == Dirn.Down) ? @"..\..\arrow_vertical.png" : @"..\..\arrow_horisontal.png";
-                    m_arrowCol = m_game.Player.Col;
-                    m_arrowRow = m_game.Player.Row;
+                    ArrowImage = (facing == Player.DIRN_UP || facing == Player.DIRN_DOWN) ? @"..\..\arrow_vertical.png" : @"..\..\arrow_horisontal.png";
+                    m_arrowCol = Player.Col;
+                    m_arrowRow = Player.Row;
                     ArrowOpacity = 1;
                     InternalPropertyChanged(nameof(ArrowCol));
                     InternalPropertyChanged(nameof(ArrowRow));
                     InternalPropertyChanged(nameof(ArrowOpacity));
                     InternalPropertyChanged(nameof(ArrowImage));
 
-                    if (facing == Dirn.Up || facing == Dirn.Down) {
-                        int dist = facing == Dirn.Up ? 1 : -1;
+                    if (facing == Player.DIRN_UP || facing == Player.DIRN_DOWN) {
+                        int dist = facing == Player.DIRN_UP ? 1 : -1;
                         while ((m_arrowRow + dist) < World.NROWS && (m_arrowRow + dist) >= 0) {
                             Thread.Sleep(200);
                             m_arrowRow += dist;
@@ -245,7 +251,7 @@ namespace GUI
                         }
                     }
                     else {
-                        int dist = facing == Dirn.Right ? 1 : -1;
+                        int dist = facing == Player.DIRN_RIGHT ? 1 : -1;
                         while ((m_arrowCol + dist) < World.NCOLS && (m_arrowCol + dist) >= 0) {
                             Thread.Sleep(200);
                             m_arrowCol += dist;
@@ -257,7 +263,8 @@ namespace GUI
                     ArrowOpacity = 0;
                     Thread.Sleep(500);
                     InternalPropertyChanged(nameof(ArrowOpacity));
-                    m_game.Player.Shoot();
+                    Player.Shoot();
+                    InternalPropertyChanged(nameof(ScoreText));
                 });
             }
         }
@@ -266,7 +273,7 @@ namespace GUI
         { get; private set; }
         void InternalEnterPressed(object o)
         {
-            m_game.Player.Grab();
+            Player.Grab();
             InternalPropertyChanged(nameof(ScoreText));
         }
 
@@ -283,11 +290,11 @@ namespace GUI
 
         public int PlayerRow
         {
-            get { return GetGuiRow(m_game.Player.Row); }
+            get { return GetGuiRow(Player.Row); }
         }
         public int PlayerCol
         {
-            get { return GetGuiCol(m_game.Player.Col); }
+            get { return GetGuiCol(Player.Col); }
         }
         public string PlayerImage
         { get; private set; }
@@ -360,7 +367,7 @@ namespace GUI
 
         public string ScoreText
         {
-            get { return $"Score: {m_game.Score.Points}"; }
+            get { return $"Score: {Player.Score}"; }
         }
 
         static int GetGuiRow(int coreRow)
@@ -378,6 +385,5 @@ namespace GUI
 
         int m_arrowRow;
         int m_arrowCol;
-        Game m_game;
     }
 }

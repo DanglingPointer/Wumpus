@@ -1,5 +1,6 @@
 #pragma once
 #include <mutex>
+#include <memory>
 #include "Util.h"
 
 enum class Square
@@ -24,7 +25,13 @@ template<uint NROWS, uint NCOLS> class World
 {
 public:
     World() noexcept
+        : m_wrow(0), m_wcol(0), m_grow(0), m_gcol(0)
     {
+        for (int row = 0; row < NROWS; ++row) {
+            for (int col = 0; col < NCOLS; ++col)
+                m_sqrs[row][col] = Square::EMPTY;
+        }
+
         do {
             m_wcol = std::rand() % NCOLS;
             m_wrow = std::rand() % NROWS;
@@ -44,7 +51,7 @@ public:
                 if (!(row == m_grow && col == m_gcol) && !(row == 0 && col == 0)) {
                     rand = std::rand() % 5;
                     if (rand == 4) {
-                        m_sqrs[row, col] |= Square::PIT;
+                        m_sqrs[row][col] |= Square::PIT;
                         FillAdjacent(row, col, Square::BREEZE);
                     }
                 }
@@ -77,23 +84,23 @@ public:
         std::lock_guard<std::mutex> lg(m_lock);
         return !IsGold(m_grow, m_gcol);
     }
-    bool IsWumpus(uint row, uint col)
+    bool IsWumpus(uint row, uint col) const noexcept
     {
         return Is(Square::WUMPUS, row, col);
     }
-    bool IsGold(uint row, uint col)
+    bool IsGold(uint row, uint col) const noexcept
     {
         return Is(Square::GOLD, row, col);
     }
-    bool IsPit(uint row, uint col)
+    bool IsPit(uint row, uint col) const noexcept
     {
         return Is(Square::PIT, row, col);
     }
-    bool IsStench(uint row, uint col)
+    bool IsStench(uint row, uint col) const noexcept
     {
         return Is(Square::STENCH, row, col);
     }
-    bool IsBreeze(uint row, uint col)
+    bool IsBreeze(uint row, uint col) const noexcept
     {
         return Is(Square::BREEZE, row, col);
     }
@@ -102,7 +109,7 @@ public:
         if (!IsWumpus(row, col))
             return false;
         std::lock_guard<std::mutex> lg(m_lock);
-        m_sqrs[row, col] ^= Square::WUMPUS;
+        m_sqrs[row][col] ^= Square::WUMPUS;
         return true;
     }
     bool TryGrabGold(uint row, uint col)
@@ -110,26 +117,26 @@ public:
         if (!IsGold(row, col))
             return false;
         std::lock_guard<std::mutex> lg(m_lock);
-        m_sqrs[row, col] ^= Square::GOLD;
+        m_sqrs[row][col] ^= Square::GOLD;
         return true;
     }
 private:
     void FillAdjacent(uint row, uint col, Square value)
     {
-        if (row != 0)           m_sqrs[row - 1, col] |= value;
-        if (row + 1 != NROWS)   m_sqrs[row + 1, col] |= value;
-        if (col != 0)           m_sqrs[row, col - 1] |= value;
-        if (col + 1 != NCOLS)   m_sqrs[row, col + 1] |= value;
+        if (row != 0)           m_sqrs[row - 1][col] |= value;
+        if (row + 1 != NROWS)   m_sqrs[row + 1][col] |= value;
+        if (col != 0)           m_sqrs[row][col - 1] |= value;
+        if (col + 1 != NCOLS)   m_sqrs[row][col + 1] |= value;
     }
-    bool Is(Square what, uint row, uint col)
+    bool Is(Square what, uint row, uint col) const noexcept
     {
         if (row < NROWS && col < NCOLS)
-            return (m_sqrs[row, col] & what);
+            return (m_sqrs[row][col] & what) == what;
         return false;
     }
     Square m_sqrs[NROWS][NCOLS];
     uint m_wrow, m_wcol, m_grow, m_gcol;
-    std::mutex m_lock;
+    mutable std::mutex m_lock;
 };
 
 template <class TWorld> class Agent;
@@ -139,8 +146,8 @@ class Agent<World<NROWS, NCOLS>>
 {
     typedef World<NROWS, NCOLS> World_t;
 public:
-    Agent(World_t *pworld) noexcept
-        :m_pworld(pworld), m_row(0), m_col(0), m_hasArr(true), 
+    explicit Agent(std::shared_ptr<World_t> pworld) noexcept
+        :m_pworld(std::move(pworld)), m_row(0), m_col(0), m_hasArr(true), 
         m_facing(Dirn::RIGHT), m_pts(0)
     { }
     Dirn Facing() const noexcept { return m_facing; }
@@ -220,7 +227,7 @@ public:
     }
 
 private:
-    World_t *m_pworld;
+    std::shared_ptr<World_t> m_pworld;
     uint m_row, m_col;
     bool m_hasArr;
     Dirn m_facing;

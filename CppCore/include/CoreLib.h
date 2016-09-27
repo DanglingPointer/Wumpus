@@ -1,11 +1,5 @@
 #pragma once
 
-#include <SDKDDKVer.h>
-
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
-
-#include <windows.h>
-
 #ifdef CPPCORE_EXPORTS
 # define CPPCORE_API __declspec(dllexport)
 #else
@@ -18,15 +12,15 @@ extern "C"
 #endif
     CPPCORE_API void GameInit();
 
-    CPPCORE_API bool IsWumpus(unsigned int row, unsigned int col);
+    CPPCORE_API int IsWumpus(unsigned int row, unsigned int col);
 
-    CPPCORE_API bool IsGold(unsigned int row, unsigned int col);
+    CPPCORE_API int IsGold(unsigned int row, unsigned int col);
 
-    CPPCORE_API bool IsStench(unsigned int row, unsigned int col);
+    CPPCORE_API int IsStench(unsigned int row, unsigned int col);
 
-    CPPCORE_API bool IsBreeze(unsigned int row, unsigned int col);
+    CPPCORE_API int IsBreeze(unsigned int row, unsigned int col);
 
-    CPPCORE_API bool IsPit(unsigned int row, unsigned int col);
+    CPPCORE_API int IsPit(unsigned int row, unsigned int col);
 
     CPPCORE_API unsigned int WumpusRow();
 
@@ -58,9 +52,18 @@ extern "C"
 
     CPPCORE_API unsigned int AgentCol();
 
+    // UP = 0, RIGHT = 1, DOWN = 2, LEFT = 3
     CPPCORE_API unsigned int AgentFacing();
 
+    CPPCORE_API int AgentHasArrow();
+
     CPPCORE_API long long GetScore();
+
+    // ----------------------------------------------------------------------
+
+    CPPCORE_API unsigned int RowCount();
+
+    CPPCORE_API unsigned int ColCount();
 
 #ifdef __cplusplus
 }
