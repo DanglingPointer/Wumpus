@@ -1,6 +1,8 @@
 #pragma once
 #include <mutex>
 #include <memory>
+#include <random>
+#include <ctime>
 #include "Util.h"
 
 enum class Square
@@ -25,32 +27,29 @@ template<uint NROWS, uint NCOLS> class World
 {
 public:
     World() noexcept
-        : m_wrow(0), m_wcol(0), m_grow(0), m_gcol(0)
+        : m_sqrs{ }, m_wrow(0), m_wcol(0), m_grow(0), m_gcol(0), m_lock(), m_rand(std::time(0))
     {
-        for (int row = 0; row < NROWS; ++row) {
-            for (int col = 0; col < NCOLS; ++col)
-                m_sqrs[row][col] = Square::EMPTY;
-        }
+        std::uniform_int_distribution<> colDis(0, NCOLS-1);
+        std::uniform_int_distribution<> rowDis(0, NROWS-1);
 
         do {
-            m_wcol = std::rand() % NCOLS;
-            m_wrow = std::rand() % NROWS;
+            m_wcol = colDis(m_rand);
+            m_wrow = rowDis(m_rand);
         } while (m_wcol == 0 && m_wrow == 0);
         m_sqrs[m_wrow][m_wcol] |= Square::WUMPUS;
         FillAdjacent(m_wrow, m_wcol, Square::STENCH);
 
         do {
-            m_gcol = std::rand() % NCOLS;
-            m_grow = std::rand() % NROWS;
+            m_gcol = colDis(m_rand);
+            m_grow = rowDis(m_rand);
         } while (m_gcol == 0 && m_grow == 0);
         m_sqrs[m_grow][m_gcol] |= Square::GOLD;
 
-        int rand;
+        std::uniform_int_distribution<> probDis(0, 4);
         for (uint row = 0; row < NROWS; ++row) {
             for (uint col = 0; col < NCOLS; ++col) {
                 if (!(row == m_grow && col == m_gcol) && !(row == 0 && col == 0)) {
-                    rand = std::rand() % 5;
-                    if (rand == 4) {
+                    if (probDis(m_rand) == 4) {
                         m_sqrs[row][col] |= Square::PIT;
                         FillAdjacent(row, col, Square::BREEZE);
                     }
@@ -74,12 +73,12 @@ public:
     {
         return m_gcol;
     }
-    bool IsWumpusKilled() const noexcept
+    bool IsWumpusKilled() const
     {
         std::lock_guard<std::mutex> lg(m_lock);
         return !IsWumpus(m_wrow, m_wcol);
     }
-    bool IsGoldGrabbed() const noexcept
+    bool IsGoldGrabbed() const
     {
         std::lock_guard<std::mutex> lg(m_lock);
         return !IsGold(m_grow, m_gcol);
@@ -137,6 +136,7 @@ private:
     Square m_sqrs[NROWS][NCOLS];
     uint m_wrow, m_wcol, m_grow, m_gcol;
     mutable std::mutex m_lock;
+    std::mt19937 m_rand;
 };
 
 template <class TWorld> class Agent;
